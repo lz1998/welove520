@@ -10,16 +10,6 @@ use welove520::api::panorama::PanoramaApi;
 use welove520::api::stall::StallApi;
 use welove520::api::WeLoveClient;
 
-pub struct OnceTrue(bool);
-
-impl OnceTrue {
-    pub fn get(&mut self) -> bool {
-        let tmp = self.0;
-        self.0 = false;
-        tmp
-    }
-}
-
 const WHEAT_ITEM_ID: i64 = 201001;
 const BUY_IDS: [i64; 4] = [209001, 209002, 209003, 209004];
 
@@ -115,7 +105,7 @@ async fn stall_renew(cli: &WeLoveClient, warehouse_items: &mut HashMap<i64, i64>
         }
     };
     tracing::info!("stall last_free_ad_time: {}", stall.last_free_ad_time);
-    let mut ad = OnceTrue(stall.last_free_ad_time == 0);
+    let mut ad = stall.last_free_ad_time == 0;
     let not_empty_slots: Vec<_> = stall.stall_items.iter().map(|item| item.slot).collect();
     let empty_slots: Vec<_> = (1..=stall.capacity)
         .filter(|slot| !not_empty_slots.contains(slot))
@@ -124,7 +114,7 @@ async fn stall_renew(cli: &WeLoveClient, warehouse_items: &mut HashMap<i64, i64>
     for slot in empty_slots {
         if get_warehouse_item_count(warehouse_items, WHEAT_ITEM_ID) >= 10 {
             if let Err(err) = cli
-                .stall_onshelf(slot, WHEAT_ITEM_ID, 10, 36, ad.get(), 0)
+                .stall_onshelf(slot, WHEAT_ITEM_ID, 10, 36, std::mem::take(&mut ad), 0)
                 .await
             {
                 tracing::error!("failed to onshelf: {err}");
@@ -143,7 +133,7 @@ async fn stall_renew(cli: &WeLoveClient, warehouse_items: &mut HashMap<i64, i64>
             tracing::error!("failed to earn: {err}");
         } else if get_warehouse_item_count(warehouse_items, WHEAT_ITEM_ID) >= 10 {
             if let Err(err) = cli
-                .stall_onshelf(item.slot, WHEAT_ITEM_ID, 10, 36, ad.get(), 0)
+                .stall_onshelf(item.slot, WHEAT_ITEM_ID, 10, 36, std::mem::take(&mut ad), 0)
                 .await
             {
                 tracing::error!("failed to onshelf: {err}");
