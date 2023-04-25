@@ -226,14 +226,17 @@ async fn auto_orders(cli: &WeLoveClient, warehouse_items: &mut HashMap<i64, i64>
                 .iter()
                 .all(|item| get_warehouse_item_count(warehouse_items, item.item_id) > item.count)
             {
-                if order.special == 0 {
+                let order_item_count: i64 = order.items.iter().map(|item| item.count).sum();
+                if order.special == 0 || order_item_count > 2 {
                     if let Err(err) = cli.order_refuse(order.order_id).await {
                         tracing::error!("failed to refuse order: {err}")
                     } else {
                         tracing::info!(
-                            "succeed to refuse order, slot: {}, order_id: {}",
+                            "succeed to refuse order, special: {}, slot: {}, order_id: {}, items: {}",
+                            order.special,
                             order.slot,
-                            order.order_id
+                            order.order_id,
+                            serde_json::to_string(&order.items).unwrap()
                         )
                     }
                 } else {
