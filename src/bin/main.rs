@@ -224,7 +224,7 @@ async fn auto_orders(cli: &WeLoveClient, warehouse_items: &mut HashMap<i64, i64>
             if !order
                 .items
                 .iter()
-                .all(|item| get_warehouse_item_count(warehouse_items, item.item_id) > item.count)
+                .all(|item| get_warehouse_item_count(warehouse_items, item.item_id) >= item.count)
             {
                 let order_item_count: i64 = order.items.iter().map(|item| item.count).sum();
                 if order.special == 0 || order_item_count > 2 {
