@@ -11,7 +11,7 @@ use welove520::api::stall::StallApi;
 use welove520::api::WeLoveClient;
 
 const WHEAT_ITEM_ID: i64 = 201001;
-const BUY_IDS: [i64; 4] = [209001, 209002, 209003, 209004];
+const BUY_IDS: [i64; 4] = [209001, 209002, 209003, 209004, 210001, 210002, 210003];
 
 #[tokio::main]
 async fn main() {
