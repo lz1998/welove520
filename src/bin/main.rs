@@ -11,7 +11,7 @@ use welove520::api::stall::StallApi;
 use welove520::api::WeLoveClient;
 
 const WHEAT_ITEM_ID: i64 = 201001;
-const BUY_IDS: [i64; 7] = [209001, 209002, 209003, 209004, 210001, 210002, 210003];
+const BUY_IDS: [i64; 8] = [209001, 209002, 209003, 209004, 210001, 210002, 210003, 210004];
 
 #[tokio::main]
 async fn main() {
@@ -221,13 +221,14 @@ async fn auto_orders(cli: &WeLoveClient, warehouse_items: &mut HashMap<i64, i64>
 
     for mut order in orders.into_iter() {
         loop {
+            let order_item_count: i64 = order.items.iter().map(|item| item.count).sum();
             if !order
                 .items
                 .iter()
                 .all(|item| get_warehouse_item_count(warehouse_items, item.item_id) >= item.count)
+                || order_item_count > 2
             {
-                let order_item_count: i64 = order.items.iter().map(|item| item.count).sum();
-                if order.special == 0 || order_item_count > 2 {
+                if order.voucher_item_id == 0 || order_item_count > 2 {
                     if let Err(err) = cli.order_refuse(order.order_id).await {
                         tracing::error!("failed to refuse order: {err}")
                     } else {
