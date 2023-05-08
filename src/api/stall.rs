@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 pub trait StallApi {
     async fn stall_query(&self) -> WeLoveResult<StallInfo>;
     async fn stall_earn(&self, slot: i64, stall_sale_id: i64) -> WeLoveResult<Response>;
+    async fn stall_buy(&self, stall_sale_id: i64, seller_farm_id: i64) -> WeLoveResult<Response>;
     async fn stall_onshelf(
         &self,
         slot: i64,
@@ -70,6 +71,17 @@ impl StallApi for WeLoveClient {
         .await
     }
 
+    async fn stall_buy(&self, stall_sale_id: i64, seller_farm_id: i64) -> WeLoveResult<Response> {
+        self.post(
+            "/v1/game/farm/stall/buy",
+            HashMap::from([
+                ("stall_sale_id", stall_sale_id.to_string().as_str()),
+                ("seller_farm_id", seller_farm_id.to_string().as_str()),
+            ]),
+        )
+        .await
+    }
+
     async fn stall_onshelf(
         &self,
         slot: i64,
@@ -116,6 +128,13 @@ mod tests {
     async fn test_stall_earn() {
         let cli = get_test_client();
         let resp = cli.stall_earn(3, 3226224553).await.unwrap();
+        dbg!(resp);
+    }
+
+    #[tokio::test]
+    async fn test_stall_buy() {
+        let cli = get_test_client();
+        let resp = cli.stall_buy(3226224553, 3226224553).await.unwrap();
         dbg!(resp);
     }
 
